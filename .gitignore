@@ -1,0 +1,6 @@
+Tweets/*
+*.pyc
+*.csv
+*.xl*
+Resources/*
+.D*
