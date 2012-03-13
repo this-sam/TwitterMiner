@@ -1,65 +1,113 @@
-#Many types of events are contained during a conversation.  This class makes it
-#easier to determine which type of event, etc.
-
 class Tweet:
 	
-	global Settings, datetime, string
+	global Settings, datetime, string, pprint
 	from Settings import Settings
-	from datetime import datetime
-
+	import datetime, pprint
 	
-	def __init__(self, rawString):
-		self.rawString = rawString
-		splitString = self.rawString.split(',', 5)
+	def __init__(self, tweetDict):
+		pprint.pprint(tweetDict)
 		
-		#INITIALIZE EVENT VARIABLES:	#+ --> feature implemented
-		self.type = ""						#+ what type of event (list in Settings.py)
-		self.username = ""				#+ username of person who caused event
-		self.text = ""						#+ text in text box during event
-		self.timestamp = ""				#+ timestamp of when event took place
-		
+		#INITIALIZE tweet VARIABLES:	#+ --> feature implemented
+		self.type = ""					#+ what type of tweet (list in Settings.py)
+		self.username = ""				#+ username of person who caused tweet
+		self.text = ""					#+ text in text box during tweet
+		self.timestamp = ""				#+ timestamp of when tweet took place
 		self.timestampAsDatetime = -1	#+ save the timestamp as a python datetime object
 		
-		self.isEmpty = False				#+ is there text?
-		self.length = -1					#+ total length of text
-		self.numChars = -1				#+ total characters in text box during event
+		#text variables
+		self.isEmpty = False			#+ is there text?
+		self.length = -1				#+ total length of text
+		self.numChars = -1				#+ total characters in tweet
 		self.numWords = -1				#+ total number of "words" (sep by spaces)
-		self.avgWordLen = -1				#+ average length of words (no punctuation)
+		self.avgWordLen = -1			#+ average length of words (no punctuation)
 		
-		self.hasPunctuation = False	#- boolean has punctuation (yes/no)
+		self.hasPunctuation = False		#- boolean has punctuation (yes/no)
 		self.punctuation = []			#- array containing all punctuation, in order
 		
 		self.hasTitleCase = False		#- any capital letters starting words?  (proper nouns, start of sentence... etc.)
-		self.hasCapsWord	= False		#- any words of all capitals?
+		self.hasCapsWord  = False		#- any words of all capitals?
 		self.capsSegments = []			#- array of sections of text that are all caps (punctuation included)
-		self.capsRatio	= -1				#- ratio of capitalized to non-capitalized letters
+		self.capsRatio	  = -1			#- ratio of capitalized to non-capitalized letters
 		
-		self.hasEmoticons = False		#- does this event contain emoticons?
-		self.emoticons = []				#- array of emoticons used in this event
+		self.hasEmoticons = False		#- does this tweet contain emoticons?
+		self.emoticons = []				#- array of emoticons used in this tweet
 		
-		#begin to set event attributes
-		self.username = splitString[0].strip()
-		self.timestamp = splitString[1].strip()
-		self.type = splitString[2].strip()
-		self.text = splitString[3].strip()
+		#twitter elements
+		self.totalEntities = -1  		#- entities are hashtags, urls & mentions
+		self.hashtags = []				#- array of hashtag items from tweet
+		self.totalHashtags = -1 		#-
+		self.urls = []					#-
+		self.totalURLs	= -1 			#-
+		self.userMentions = []			#-
+		self.totalUserMentions = -1 	#-
+		self.source	= ""				#-
+		self.mobileSource = False		#-
 		
-		self.timestampAsDatetime = self.convertTimestamp(self.timestamp)
+		#geo
+		self.geo = ""					#-
+		self.hasGeo = False				#-
+		self.source = ""				#-
 		
-		self.length = len(self.text)
-		self.isEmpty = (self.length==0)
-		if (self.isEmpty == False):
-			self.numChars = self.getNumChars()
-			self.numWords = self.getNumWords()
-			if self.numWords != 0:
-				self.avgWordLen = self.numChars/self.numWords
-			else:
-				self.avgWordLen = 0
+		#user
+		self.name = ""					#-
+		self.screenname = ""			#-
+		self.created_at = ""			#-
+		self.hasProfImage = False		#-
+		self.hasBackgroundImage = False #-
+		self.followersCount = -1 		#-
+		self.favoritesCount = -1 		#-
+		self.friendsCount = -1 			#-
+		self.followingCount = -1 		#-
+		self.hasDescription = False		#-
+		self.statusesCount = -1 		#-
+		
+		
+		
+		
+		##begin to set tweet attributes
+		#self.username = splitString[0].strip()
+		#self.timestamp = splitString[1].strip()
+		#self.type = splitString[2].strip()
+		#self.text = splitString[3].strip()
+		#
+		#self.timestampAsDatetime = self.convertTimestamp(self.timestamp)
+		#
+		#self.length = len(self.text)
+		#self.isEmpty = (self.length==0)
+		#if (self.isEmpty == False):
+		#	self.numChars = self.getNumChars()
+		#	self.numWords = self.getNumWords()
+		#	if self.numWords != 0:
+		#		self.avgWordLen = self.numChars/self.numWords
+		#	else:
+		#		self.avgWordLen = 0
 			
 		
 		if Settings.DEBUG:
 			self.__debug()
-
-
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+#====================================================
+#------------LEFTOVERS FROM EVENT ---------------
 #---------------------------------------------
 #Getter functions!
 #getters will either calculate a value, or return the calculated
@@ -117,22 +165,11 @@ class Tweet:
 	
 	def __debug(self):
 		print "Dumping Object Tweet"
-		print self.rawString
-		print "USER:\n\t"+self.username
-		print "TYPE:\n\t"+self.type
-		print "TEXT:\n\t"+self.text
-		print "TIME:\n\t",self.timestampAsDatetime
-		print "BOOLEANS:"
-		print "\tisEmpty:", self.isEmpty
-		print "CALCULATED:"
-		print "\tnumChars:", self.numChars
-		print "\tnumWords:", self.numWords
-		print "\tavgWordLen:", self.avgWordLen
 		
 if __name__ == '__main__':
-	
-	string = "A_01_4_02, 2011-09-29 21:37:28.291, snd, xxx x xxxxx xxx xxxxxxxx"
-	event = Tweet(string)
+	pass
+	#string = "A_01_4_02, 2011-09-29 21:37:28.291, snd, xxx x xxxxx xxx xxxxxxxx"
+	#tweet = Tweet(string)
 	
 	
 

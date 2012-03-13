@@ -24,7 +24,8 @@ class TwitterMiner:
 		
 		file, line = self.jsonFiles[0], 0
 		fhandle = open(file, 'r')
-		fOutHandle = open(Settings.SELF_DIR+"Tweets.txt", 'w')
+
+		#loop through tweets
 		ct = 0
 		for line in fhandle.readlines():
 			line = unicode(line)
@@ -35,19 +36,10 @@ class TwitterMiner:
 					ct +=1
 					if ct>100:
 						break
-					#print line
-					for element, data in nextTweet.iteritems():
-						if type(data)==type({}):
-							fOutHandle.write(element+":\n")
-							for innerElement, innerData in data.iteritems():
-								fOutString = ("\t"+repr(innerElement)+" : "+repr(innerData)+" : "+repr(type(innerData))+"\n")
-								fOutHandle.write(fOutString)
-						else:
-							fOutString = (repr(element)+" : "+repr(data)+" : "+repr(type(data))+"\n")
-							fOutHandle.write(fOutString)
-					fOutHandle.write("\n\n========================================================================\n\n")
-				
-		fOutHandle.close()
+					#print each line, formatted nicely.
+					print "\n----------------Tweet "+str(ct)+"------------------------------\n"
+					tweet = Tweet(nextTweet)
+					
 		
 		if Settings.DEBUG:
 			print nextTweet
@@ -90,13 +82,6 @@ class TwitterMiner:
 					jsonFiles.append(file)
 	
 		return jsonFiles
-
-
-
-
-
-
-
 
 
 
