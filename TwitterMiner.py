@@ -1,34 +1,56 @@
-#==========================================================
-#TODO:
-#	-- Make a globals class so that I can globally set debug, parameters
-#	-- Lots of other things that i won't forget because i need to do them
-#  -- Look into measuring where in the sentence the word is located that is edited
-#      --> statistical analysis on sentences... from twitter, etc.?  db of
-#			  messenger convos?
-
 class TwitterMiner:
 	
 	global re, pprint
 	import os, pprint, re
 	
+	global json
+	import simplejson as json
+	
 	global Tweet, Settings
 	from Tweet import Tweet
 	from Settings import Settings
-
 	
 	def __init__(self):
 		"""Initialize TwitterMiner Class
 		"""
-		#log errors
-		self.errors = []
+		#Tools:
+		self.decoder = json.JSONDecoder()
 		
 		#get input files
-		#store files in dictionary --> USERNAME =>
-		self.jsonFiles = self.__getFiles()
-		#print self.surveyFiles, self.userFiles
+		self.jsonFiles = self.getFiles()
 		
-		#self.chats = self.__makeChats()
+		if Settings.DEBUG:
+			print self.jsonFiles
 		
+		file, line = self.jsonFiles[0], 0
+		fhandle = open(file, 'r')
+		fOutHandle = open(Settings.SELF_DIR+"Tweets.txt", 'w')
+		ct = 0
+		for line in fhandle.readlines():
+			line = unicode(line)
+			nextTweet, self.nextLine = self.getTweetDict(line)
+			if "user" in nextTweet:
+				if nextTweet["user"]["lang"] == "en":
+					#temporary
+					ct +=1
+					if ct>100:
+						break
+					#print line
+					for element, data in nextTweet.iteritems():
+						if type(data)==type({}):
+							fOutHandle.write(element+":\n")
+							for innerElement, innerData in data.iteritems():
+								fOutString = ("\t"+repr(innerElement)+" : "+repr(innerData)+" : "+repr(type(innerData))+"\n")
+								fOutHandle.write(fOutString)
+						else:
+							fOutString = (repr(element)+" : "+repr(data)+" : "+repr(type(data))+"\n")
+							fOutHandle.write(fOutString)
+					fOutHandle.write("\n\n========================================================================\n\n")
+				
+		fOutHandle.close()
+		
+		if Settings.DEBUG:
+			print nextTweet
 		##make sure we loaded files
 		#if len(self.chats) > 0:
 		#	#Write Message Feature File
@@ -47,31 +69,27 @@ class TwitterMiner:
 			self.__debug()
 
 
+	def getTweetDict(self, tweetString):
+		decodeTuple = self.decoder.raw_decode(tweetString)
+		return decodeTuple
+	
 
-
-
-#===============================================
-#--------------Private Functions----------------
-	def __getFiles(self):
+	def getFiles(self):
 		"""
-		Load 
+		Load files from Settings.ROOT_DIR
 		"""
-		surveyFiles = []
-		userFiles = []
+		jsonFiles = []
 		
 		#walk the file directory
 		for dirpath, dirnames, filenames in TwitterMiner.os.walk(Settings.ROOT_DIR):
 			for f in filenames:
 				file = TwitterMiner.os.path.join(dirpath, f)
 				
-				if (re.search("[A-D]_[0-9_]*.txt",file) != None):
-					#trim file name and search string
-					file = file[len(Settings.ROOT_DIR):]
-					userFiles.append(file)
-				elif (re.search(".csv",file) != None):
-					surveyFiles.append(file)
-					
-		return surveyFiles, userFiles
+				#only grab json files
+				if (re.search(".json",file) != None):
+					jsonFiles.append(file)
+	
+		return jsonFiles
 
 
 
@@ -181,13 +199,11 @@ class TwitterMiner:
 
 	def __debug(self):
 		print "Dumping Object TwitterMiner"
-		pprint.pprint(self.surveyFiles)
-		pprint.pprint(self.userFiles)
-		pprint.pprint(self.errors)
+		pprint.pprint(self.jsonFiles)
 
 
 if __name__ == '__main__':
-	selector = TwitterMiner()
+	miner = TwitterMiner()
 	 
 	 
 	 
