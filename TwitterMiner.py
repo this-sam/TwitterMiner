@@ -1,4 +1,4 @@
-class TwitterMiner:
+class TwitterMiner(object):
 	
 	global re, pprint
 	import os, pprint, re
