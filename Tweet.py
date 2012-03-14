@@ -80,13 +80,14 @@ class Tweet(object):
 		self.xText = self.__xOutText(self.text)
 		print self.text
 		print self.xText
-	
+		
+		
+		#DEAR GOD CLEAN THIS UP!
 		self.length = len(self.text)
 		self.isRetweet = tweetDict["in_reply_to_screen_name"] == None
 		self.numRetweets = tweetDict["retweet_count"]
 		self.wasRetweeted = self.numRetweets > 0
 		self.timestamp = tweetDict["created_at"]
-
 
 		self.numChars = self.__getNumChars(self.xText)
 		self.numWords = self.__getNumWords(self.xText)
@@ -98,10 +99,12 @@ class Tweet(object):
 		self.punctuation = self.__getPunctuation(self.xText)
 		self.hasPunctuation = len(self.punctuation) == 0
 		
+		words = self.__getWords(self.xText)
+		print words
+		
+		
 		if Settings.DEBUG:
 			self.__debug()
-			
-		self.__debug()
 		
 		
 		
@@ -125,9 +128,26 @@ class Tweet(object):
 	def __getPunctuation(self, text):
 		punctuation = []
 		for char in text:
-			if not char.isalnum:
+			if not char.isalnum and char != " ":
 				punctuation.append(char)
 		return punctuation
+	
+	def __getWords(self, text):
+		#return all strings containing at least 1 letter
+		#strip punctuation?
+		sText = text.split(" ")
+		words = []
+		for word in sText:
+			isWord = False
+			for char in word:
+				if char.isalpha():
+					isWord = True
+			if isWord:
+				#check for ending with punctuation, remove.
+				words.append(word)
+				
+		return words
+			
 				
 			
 	def __unicodeToString(self, uni):
