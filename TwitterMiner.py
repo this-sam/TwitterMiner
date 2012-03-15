@@ -1,86 +1,98 @@
-#==========================================================
-#TODO:
-#	-- Make a globals class so that I can globally set debug, parameters
-#	-- Lots of other things that i won't forget because i need to do them
-#  -- Look into measuring where in the sentence the word is located that is edited
-#      --> statistical analysis on sentences... from twitter, etc.?  db of
-#			  messenger convos?
-
-class TwitterMiner:
+class TwitterMiner(object):
 	
 	global re, pprint
 	import os, pprint, re
 	
+	global json
+	import simplejson as json
+	
 	global Tweet, Settings
 	from Tweet import Tweet
 	from Settings import Settings
-
 	
 	def __init__(self):
 		"""Initialize TwitterMiner Class
 		"""
-		#log errors
-		self.errors = []
+		#Tools:
+		self.decoder = json.JSONDecoder()
 		
 		#get input files
-		#store files in dictionary --> USERNAME =>
-		self.surveyFiles, self.userFiles = self.__getFiles()
-		print self.surveyFiles, self.userFiles
+		self.jsonFiles = self.getFiles()
 		
-		self.chats = self.__makeChats()
+		if Settings.DEBUG:
+			print self.jsonFiles
 		
-		#make sure we loaded files
-		if len(self.chats) > 0:
-			#Write Message Feature File
-			self.featureVectors = self.getMessageFeatureVectors()
-			self.featureSet = self.chats[0].userA.messages[0].getFeatureSet()
-			self.printToCSV(self.featureVectors, self.featureSet, "MessageFeatures.csv")
-						
-			#Write User Feature File
-			self.featureVectors = self.getUserFeatureVectors()
-			self.featureSet =  self.chats[0].userA.getFeatureSet()
-			self.printToCSV(self.featureVectors, self.featureSet, "UserFeatures.csv")
-		else:
-			print "No chat files could be found."
+
 		
 		if Settings.DEBUG:
 			self.__debug()
 
-
-
-
-
-#===============================================
-#--------------Private Functions----------------
-	def __getFiles(self):
+	#==========================================
+	# Public Functions
+	
+	def getFiles(self):
 		"""
-		Load 
+		Load files from Settings.ROOT_DIR
 		"""
-		surveyFiles = []
-		userFiles = []
+		jsonFiles = []
 		
 		#walk the file directory
 		for dirpath, dirnames, filenames in TwitterMiner.os.walk(Settings.ROOT_DIR):
 			for f in filenames:
 				file = TwitterMiner.os.path.join(dirpath, f)
 				
-				if (re.search("[A-D]_[0-9_]*.txt",file) != None):
-					#trim file name and search string
-					file = file[len(Settings.ROOT_DIR):]
-					userFiles.append(file)
-				elif (re.search(".csv",file) != None):
-					surveyFiles.append(file)
-					
-		return surveyFiles, userFiles
+				#only grab json files
+				if (re.search(".json",file) != None):
+					jsonFiles.append(file)
+	
+		return jsonFiles
 
+	def getTweetDict(self, tweetString):
+		try:
+			decodeTuple = self.decoder.raw_decode(tweetString)
+		except json.decoder.JSONDecodeError:
+			if Settings.DEBUG:
+				print "This tweet broke it."
+				pprint.pprint(tweetString)
+		else:
+			return decodeTuple
+		return ({}, 0)
+	
+	def mineTweets(self):
+		#tweets contained in self.jsonFiles[0]
+		
+		fOut = open("Features.csv", 'w')
+		self.__writeLine(fOut, Settings.ALL_FEATURES)
+		
+		for jFile in self.jsonFiles:
+			fIn = open(jFile, 'r')
+			#loop through tweets
+			for line in fIn.readlines():
+				line = unicode(line)
+				tweetDict, line = self.getTweetDict(line)
+				#make sure it's an actual tweet, and in english
+				tweet = self.__makeTweet(tweetDict)
+				if tweet != False and tweet.isValid:
+					self.__writeLine(fOut, tweet.getFeatureVector())
+			fIn.close()
+		fOut.close()
+		
+						
+	#==========================================
+	# Private Functions
 
+	def __makeTweet(self, tweetDict):
+		if "user" in tweetDict:
+			if tweetDict["user"]["lang"] == "en":
+				tweet = Tweet(tweetDict)
+				return tweet
+		return False
 
-
-
-
-
-
-
+	def __writeLine(self, fHandle, array):
+		row = ""
+		for element in array:
+			row+=str(element)+","
+		fHandle.write(row+"\r\n")
 
 
 
@@ -109,23 +121,7 @@ class TwitterMiner:
 				featureVectors.append(message.featureVector)
 		return featureVectors
 
-	def printToCSV(self, featureVectors, featureSet, fileName = "Features.csv", withHeader=True, overwrite=True):
-		if overwrite:
-			f = open(fileName, 'w')
-		else:
-			f = open(fileName, 'a')
-		
-		if withHeader:
-			for heading in featureSet:
-				f.write(heading+",")
-			f.write("\r\n")
-		
-		for vector in featureVectors:
-			row = ""
-			for element in vector:
-				row+=str(element)+","
-			f.write(row+"\r\n")
-		f.close()
+
 		
 			
 			
@@ -181,13 +177,12 @@ class TwitterMiner:
 
 	def __debug(self):
 		print "Dumping Object TwitterMiner"
-		pprint.pprint(self.surveyFiles)
-		pprint.pprint(self.userFiles)
-		pprint.pprint(self.errors)
+		pprint.pprint(self.jsonFiles)
 
 
 if __name__ == '__main__':
-	selector = TwitterMiner()
+	miner = TwitterMiner()
+	miner.mineTweets()
 	 
 	 
 	 
