@@ -2,6 +2,6 @@ Tweets/*
 *.pyc
 *.csv
 *.xl*
-Resources/*
+Resources/Male/*
+Resources/Female/*
 .D*
-*.txt
