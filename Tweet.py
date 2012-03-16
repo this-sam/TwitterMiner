@@ -1,10 +1,13 @@
 class Tweet(object):
 	
-	global Settings, datetime, string, pprint, re
+	global Settings, GenderFinder
 	from Settings import Settings
+	from GenderFinder import GenderFinder
+	
+	global datetime, string, pprint, re
 	import datetime, pprint, re
 	
-	def __init__(self, tweetDict):
+	def __init__(self, tweetDict, genderFinder = GenderFinder()):
 		if Settings.DEBUG == True:
 			pprint.pprint(tweetDict)
 		
@@ -61,8 +64,9 @@ class Tweet(object):
 		self.source = ""				#-
 		
 		#user
-		self.name = ""					#-
-		self.screenname = ""			#-
+		self.name = ""					#+
+		self.gender = 'U'				#- M/F for male, female, U for unknown
+		self.screenname = ""			#+
 		self.created_at = ""			#-
 		self.hasProfImage = False		#-
 		self.hasBackgroundImage = False #-
@@ -80,7 +84,7 @@ class Tweet(object):
 		#================================
 		#begin to set tweet attributes
 		self.text = self.__unicodeToString(tweetDict["text"])
-		self.name = self.__unicodeToString(tweetDict["user"]["name"])
+		self.name = self.__unicodeToString(tweetDict["user"]["name"]).upper()
 		self.isValid = self.text is not "" and\
 					   self.name is not "" and\
 					   re.search(",", self.name) is None and\
@@ -129,7 +133,10 @@ class Tweet(object):
 		self.hasUserMentions = 	self.totalUserMentions > 0
 		self.totalEntities = sum([self.totalURLs, self.totalUserMentions, self.totalHashtags])
 		
+		#last but not least, select those features!
 		self.featureVector = self.selectFeatures(self.allFeatures)
+		
+		self.gender = self.__getGenderFromName(self.name, genderFinder)
 		
 		if Settings.DEBUG:
 			self.__debug()
@@ -179,8 +186,17 @@ class Tweet(object):
 				if char.isupper():
 					count += 1
 		return count
+	
+	def __getGenderFromName(self, name, genderFinder):
+		nameParts = re.split("[^A-Za-z]+", name)
+		genders = []
 		
-
+		for part in nameParts:
+			genders.append(genderFinder.lookupGender(part))
+		
+		print name
+		print genders
+	
 	def __getNumChars(self, words):
 		count = 0
 		for word in words:

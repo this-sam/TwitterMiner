@@ -6,9 +6,10 @@ class TwitterMiner(object):
 	global json
 	import simplejson as json
 	
-	global Tweet, Settings
+	global Tweet, Settings, GenderFinder
 	from Tweet import Tweet
 	from Settings import Settings
+	from GenderFinder import GenderFinder
 	
 	def __init__(self):
 		"""Initialize TwitterMiner Class
@@ -18,6 +19,7 @@ class TwitterMiner(object):
 		
 		#get input files
 		self.jsonFiles = self.getFiles()
+		
 		
 		if Settings.DEBUG:
 			print self.jsonFiles
@@ -59,6 +61,9 @@ class TwitterMiner(object):
 		return ({}, 0)
 	
 	def mineTweets(self):
+		#for matching gender, dontcha know
+		genderFinder = GenderFinder()
+		
 		#tweets contained in self.jsonFiles[0]
 		
 		fOut = open("Features.csv", 'w')
@@ -71,7 +76,7 @@ class TwitterMiner(object):
 				line = unicode(line)
 				tweetDict, line = self.getTweetDict(line)
 				#make sure it's an actual tweet, and in english
-				tweet = self.__makeTweet(tweetDict)
+				tweet = self.__makeTweet(tweetDict, genderFinder)
 				if tweet != False and tweet.isValid:
 					self.__writeLine(fOut, tweet.getFeatureVector())
 			fIn.close()
@@ -81,10 +86,10 @@ class TwitterMiner(object):
 	#==========================================
 	# Private Functions
 
-	def __makeTweet(self, tweetDict):
+	def __makeTweet(self, tweetDict, genderFinder):
 		if "user" in tweetDict:
 			if tweetDict["user"]["lang"] == "en":
-				tweet = Tweet(tweetDict)
+				tweet = Tweet(tweetDict, genderFinder)
 				return tweet
 		return False
 
