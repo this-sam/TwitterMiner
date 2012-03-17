@@ -95,9 +95,11 @@ class TwitterMiner(object):
 
 	def __writeLine(self, fHandle, array):
 		row = ""
+		if Settings.DEBUG:
+			print "Writeline: " + array[0] + ":"+array[-1]
 		for element in array:
 			row+=str(element)+","
-		fHandle.write(row+"\r\n")
+		fHandle.write(row[0:-1]+"\r\n")
 
 
 

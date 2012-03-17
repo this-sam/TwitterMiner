@@ -85,10 +85,13 @@ class Tweet(object):
 		#begin to set tweet attributes
 		self.text = self.__unicodeToString(tweetDict["text"])
 		self.name = self.__unicodeToString(tweetDict["user"]["name"]).upper()
+		self.gender = self.__getGenderFromName(self.name, genderFinder)
+		
 		self.isValid = self.text is not "" and\
 					   self.name is not "" and\
+					   self.gender is not 'U' and\
 					   re.search(",", self.name) is None and\
-					   re.search("\n", self.name) is None
+					   re.search("\n", self.name) is None 
 
 
 		#for now, if text can't be converted from unicode, ditch it.		
@@ -136,7 +139,9 @@ class Tweet(object):
 		#last but not least, select those features!
 		self.featureVector = self.selectFeatures(self.allFeatures)
 		
-		self.gender = self.__getGenderFromName(self.name, genderFinder)
+		if Settings.DEBUG:
+			print "Constructor:",self.name, self.gender
+			print "Feature Vector:",self.featureVector[0], self.featureVector[-1]
 		
 		if Settings.DEBUG:
 			self.__debug()
@@ -172,6 +177,8 @@ class Tweet(object):
 				featureVector.append(seconds)
 			else:
 				featureVector.append(vars(self)[feature])
+				if Settings.DEBUG:
+					print "SelectFeatures:", featureVector[0], featureVector[-1]
 				
 		self.lastFeatureSet = features
 		return featureVector
@@ -189,14 +196,14 @@ class Tweet(object):
 	
 	def __getGenderFromName(self, name, genderFinder):
 		nameParts = re.split("[^A-Za-z]+", name)
-		genders = []
+		gender = genderFinder.lookupGender(nameParts[0])
 		
-		for part in nameParts:
-			genders.append(genderFinder.lookupGender(part))
+		if Settings.DEBUG:
+			print "\n__getGender...:",name, ":"+gender
 		
-		print name
-		print genders
-	
+		return gender
+
+
 	def __getNumChars(self, words):
 		count = 0
 		for word in words:

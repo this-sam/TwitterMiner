@@ -21,7 +21,7 @@ class Settings:
      FEMALE_FILE = SELF_DIR+"Resources/finalFemale.txt"
      
      #--------Tweet Feature Vector Constants-----------
-     ALL_FEATURES = ["name", "numChars", "numWords", "avgWordLen", "hasPunctuation", "capsRatio",\
+     ALL_FEATURES = ["numChars", "numWords", "avgWordLen", "hasPunctuation", "capsRatio",\
 					 "totalEntities", "hasHashtags", "totalHashtags", "hasURLs", "totalURLs",\
 					 "hasUserMentions", "totalUserMentions", "wasRetweeted", "isRetweet",\
-                     "numPunctuation", "numDigits", "text"]
+                     "numPunctuation", "numDigits","gender"]

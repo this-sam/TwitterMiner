@@ -1,6 +1,5 @@
 Tweets/*
 *.pyc
-*.csv
 *.xl*
 Resources/Male/*
 Resources/Female/*

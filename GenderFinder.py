@@ -44,18 +44,30 @@ class GenderFinder(object):
 
 		#read through only the necessary lines
 		startLoc, endLoc = self.__getSearchRange(kOuter, kInner, self.maleHash)
+		if Settings.DEBUG:
+			print name,":",
 		for mName in self.maleNames[startLoc:endLoc+1]:
+			if Settings.DEBUG:
+				print mName,
 			if name.upper() == mName:
 				isMale = True
+				if Settings.DEBUG:
+					print "\n---------------------->It's a BOY!"
 				break
 
 		#now check the female list
 		isFemale = False
-				#read through only the necessary lines
+		#read through only the necessary lines
+		if Settings.DEBUG:
+			print name, ":",
 		startLoc, endLoc = self.__getSearchRange(kOuter, kInner, self.femaleHash)
 		for fName in self.femaleNames[startLoc:endLoc+1]:
+			if Settings.DEBUG:
+				print fName,
 			if name.upper() == fName:
 				isFemale = True
+				if Settings.DEBUG:
+					print "\n---------------------->It's a GIRL!"
 				break
 
 		if isMale and not isFemale:
