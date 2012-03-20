@@ -19,8 +19,6 @@ class GenderFinder(object):
 		self.maleHash = self.__generateHashTable(self.maleNames)
 		self.femaleHash = self.__generateHashTable(self.femaleNames)
 		
-		print self.maleHash
-		print self.femaleHash
 	
 	def lookupGender(self, name):
 		"""Determine which gender a name belongs to.  Return M for male, F for
@@ -30,10 +28,29 @@ class GenderFinder(object):
 		if len(name)<2:
 			return 'U'
 		
+		key1 = name[0].upper()
+		key2 = name[1].upper()
+		
 		#first check male list
 		isMale = False
+		startLoc = -1
+		if key2 in self.maleHash[key1]:
+			startLoc = self.maleHash[key1][key2]
 		
+		if startLoc is not -1:
+			for key, val in self.maleHash[key1].iteritems():
+				print key, val
+			
 		
+		#now check the female list
+		isFemale = False
+		
+		if isMale and not isFemale:
+			return 'M'
+		elif isFemale and not isMale:
+			return 'F'
+		else:
+			return 'U'
 		
 	
 	def __generateHashTable(self, words):
@@ -57,3 +74,4 @@ class GenderFinder(object):
 	
 if __name__ == '__main__':
 	gf = GenderFinder()
+	print gf.lookupGender("Ellen")

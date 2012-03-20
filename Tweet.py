@@ -10,7 +10,6 @@ class Tweet(object):
 		
 		#INITIALIZE tweet VARIABLES:	#+ --> feature implemented
 		#    (just to list 'em all in one place)
-				
 		self.timestamp = ""				#+ timestamp of when tweet took place
 		self.timestampAsDatetime = -1	#+ save the timestamp as a python datetime object
 		

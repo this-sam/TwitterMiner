@@ -6,9 +6,9 @@ class Settings:
      #----------File Location Constants----------
      #ROOT_DIR = "/home/sam/Development/TwitterMiner/Tweets"
      #mac
-     #ROOT_DIR = "/Volumes/Macintosh HD 2/Development/Thesis/Twitter/Tweets"
+     ROOT_DIR = "/Volumes/Macintosh HD 2/Development/Thesis/Twitter/Tweets"
      #uvm srvr
-     ROOT_DIR = '/users/s/b/sbbrown/Development/Thesis/TwitterMiner/'
+     #ROOT_DIR = '/users/s/b/sbbrown/Development/Thesis/TwitterMiner/'
      #CsCrew Mac
      #ROOT_DIR = '/Users/cscrew/Thesis/Files/'
      #PC
