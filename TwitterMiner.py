@@ -1,87 +1,84 @@
-class TwitterMiner(object):
+#==========================================================
+#TODO:
+#	-- Make a globals class so that I can globally set debug, parameters
+#	-- Lots of other things that i won't forget because i need to do them
+#  -- Look into measuring where in the sentence the word is located that is edited
+#      --> statistical analysis on sentences... from twitter, etc.?  db of
+#			  messenger convos?
+
+class TwitterMiner:
 	
 	global re, pprint
 	import os, pprint, re
 	
-	global json
-	import simplejson as json
-	
 	global Tweet, Settings
 	from Tweet import Tweet
 	from Settings import Settings
+
 	
 	def __init__(self):
 		"""Initialize TwitterMiner Class
 		"""
-		#Tools:
-		self.decoder = json.JSONDecoder()
+		#log errors
+		self.errors = []
 		
 		#get input files
-		self.jsonFiles = self.getFiles()
+		#store files in dictionary --> USERNAME =>
+		self.surveyFiles, self.userFiles = self.__getFiles()
+		print self.surveyFiles, self.userFiles
 		
-		if Settings.DEBUG:
-			print self.jsonFiles
+		self.chats = self.__makeChats()
 		
-		file, line = self.jsonFiles[0], 0
-		fhandle = open(file, 'r')
-
-		#loop through tweets
-		ct = 0
-		for line in fhandle.readlines():
-			line = unicode(line)
-			nextTweet, self.nextLine = self.getTweetDict(line)
-			if "user" in nextTweet:
-				if nextTweet["user"]["lang"] == "en":
-					#temporary
-					ct +=1
-					if ct>100:
-						break
-					#print each line, formatted nicely.
-					print "\n----------------Tweet "+str(ct)+"------------------------------\n"
-					tweet = Tweet(nextTweet)
-					
-		
-		if Settings.DEBUG:
-			print nextTweet
-		##make sure we loaded files
-		#if len(self.chats) > 0:
-		#	#Write Message Feature File
-		#	self.featureVectors = self.getMessageFeatureVectors()
-		#	self.featureSet = self.chats[0].userA.messages[0].getFeatureSet()
-		#	self.printToCSV(self.featureVectors, self.featureSet, "MessageFeatures.csv")
-		#				
-		#	#Write User Feature File
-		#	self.featureVectors = self.getUserFeatureVectors()
-		#	self.featureSet =  self.chats[0].userA.getFeatureSet()
-		#	self.printToCSV(self.featureVectors, self.featureSet, "UserFeatures.csv")
-		#else:
-		#	print "No chat files could be found."
+		#make sure we loaded files
+		if len(self.chats) > 0:
+			#Write Message Feature File
+			self.featureVectors = self.getMessageFeatureVectors()
+			self.featureSet = self.chats[0].userA.messages[0].getFeatureSet()
+			self.printToCSV(self.featureVectors, self.featureSet, "MessageFeatures.csv")
+						
+			#Write User Feature File
+			self.featureVectors = self.getUserFeatureVectors()
+			self.featureSet =  self.chats[0].userA.getFeatureSet()
+			self.printToCSV(self.featureVectors, self.featureSet, "UserFeatures.csv")
+		else:
+			print "No chat files could be found."
 		
 		if Settings.DEBUG:
 			self.__debug()
 
 
-	def getTweetDict(self, tweetString):
-		decodeTuple = self.decoder.raw_decode(tweetString)
-		return decodeTuple
-	
 
-	def getFiles(self):
+
+
+#===============================================
+#--------------Private Functions----------------
+	def __getFiles(self):
 		"""
-		Load files from Settings.ROOT_DIR
+		Load 
 		"""
-		jsonFiles = []
+		surveyFiles = []
+		userFiles = []
 		
 		#walk the file directory
 		for dirpath, dirnames, filenames in TwitterMiner.os.walk(Settings.ROOT_DIR):
 			for f in filenames:
 				file = TwitterMiner.os.path.join(dirpath, f)
 				
-				#only grab json files
-				if (re.search(".json",file) != None):
-					jsonFiles.append(file)
-	
-		return jsonFiles
+				if (re.search("[A-D]_[0-9_]*.txt",file) != None):
+					#trim file name and search string
+					file = file[len(Settings.ROOT_DIR):]
+					userFiles.append(file)
+				elif (re.search(".csv",file) != None):
+					surveyFiles.append(file)
+					
+		return surveyFiles, userFiles
+
+
+
+
+
+
+
 
 
 
@@ -184,11 +181,13 @@ class TwitterMiner(object):
 
 	def __debug(self):
 		print "Dumping Object TwitterMiner"
-		pprint.pprint(self.jsonFiles)
+		pprint.pprint(self.surveyFiles)
+		pprint.pprint(self.userFiles)
+		pprint.pprint(self.errors)
 
 
 if __name__ == '__main__':
-	miner = TwitterMiner()
+	selector = TwitterMiner()
 	 
 	 
 	 
