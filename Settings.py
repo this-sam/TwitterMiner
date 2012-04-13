@@ -24,7 +24,7 @@ class Settings:
      ALL_FEATURES = ["numChars", "numDigits", "numWords", "avgWordLen", "hasPunctuation", "capsRatio",\
 					 "totalEntities", "hasHashtags", "totalHashtags", "hasURLs", "totalURLs",\
 					 "hasUserMentions", "totalUserMentions", "wasRetweeted", "isRetweet",\
-                     "numPunctuation", "numDigits","gender", "wordsLenLong"]
+                     "numPunctuation", "gender", "wordsLenLong"]
      
      LONGEST_WORD_LENGTH = 10
      
