@@ -91,12 +91,14 @@ class Tweet(object):
 		self.text = self.__unicodeToString(tweetDict["text"])
 		self.name = self.__unicodeToString(tweetDict["user"]["name"]).upper()
 		self.gender = self.__getGenderFromName(self.name, genderFinder)
+		self.isRetweet = tweetDict["in_reply_to_screen_name"] == None
 		
 		self.isValid = self.text is not "" and\
 					   self.name is not "" and\
 					   self.gender is not 'U' and\
 					   re.search(",", self.name) is None and\
-					   re.search("\n", self.name) is None 
+					   re.search("\n", self.name) is None and\
+					   self.isRetweet == False
 
 
 		#for now, if text can't be converted from unicode, ditch it.		
@@ -106,7 +108,7 @@ class Tweet(object):
 		self.xText = self.__xOutText(self.text)		
 		
 		#Some twitter info:
-		self.isRetweet = tweetDict["in_reply_to_screen_name"] == None
+
 		self.numRetweets = tweetDict["retweet_count"]
 		self.wasRetweeted = self.numRetweets > 0
 		self.timestamp = tweetDict["created_at"]
