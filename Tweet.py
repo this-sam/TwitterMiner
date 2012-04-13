@@ -21,9 +21,9 @@ class Tweet(object):
 		self.xText = ""				 	#+ converted (x'ed out text)
 		self.isEmpty = False			#+ is there text?
 		self.length = -1				#+ total length of text
-		#chars and words are not very smartly implemented.
+		
 		self.numChars = -1				#+ total alpha characters in tweet
-		self.numDigits = -1			#- total numeric characters in tweet
+		self.numDigits = -1				#- total numeric characters in tweet
 		self.numWords = -1				#+ total number of "words" (sep by spaces)
 		self.avgWordLen = -1			#+ average length of words (no punctuation)
 		self.isValid = False			#+in english? (drop any containing unicode
@@ -40,6 +40,12 @@ class Tweet(object):
 		
 		self.hasEmoticons = False		#- does this tweet contain emoticons?
 		self.emoticons = []				#- array of emoticons used in this tweet
+		
+		self.longestWordLength = 10		#count words of length 10 and under
+		for i in range(1, Settings.LONGEST_WORD_LENGTH+1):
+			vars(self)["wordsLen"+str(i)] = 0
+			vars(self)["ratioWordsLen"+str(i)] = 0
+		self.wordsLenLong = 0			#all words longer than longestWordLength
 		
 		#twitter elements
 		self.totalEntities = -1  		#- entities are hashtags, urls & mentions
@@ -79,7 +85,6 @@ class Tweet(object):
 		
 		self.featureVector = []			#+ and the moment you've all been waiting for...
 		self.allFeatures = Settings.ALL_FEATURES
-		
 		
 		#================================
 		#begin to set tweet attributes
@@ -122,6 +127,10 @@ class Tweet(object):
 			self.capsRatio = self.__getCapsCount(words)/float(self.numChars)
 		else:
 			self.capsRatio = 0
+			
+		#get the count of words of each length
+		self.__setWordLengthCounts(words)
+		self.__setWordLengthRatios(words)
 			
 		self.punctuation = self.__getPunctuation(self.xText)
 		self.hasPunctuation = len(self.punctuation) != 0
@@ -264,9 +273,26 @@ class Tweet(object):
 					words.append(newWord)
 			
 		return words
-			
+	
+	def __setWordLengthCounts(self, words):
+		for word in words:
+			length = len(word)
+			if length <= Settings.LONGEST_WORD_LENGTH:
+				vars(self)["wordsLen"+str(length)] += 1
+			else:
+				self.wordsLenLong += 1
 				
+	def __setWordLengthRatios(self, words):
+		numWords = len(words)
+		if numWords == 0:
+			return None
+		
+		for i in range(1, Settings.LONGEST_WORD_LENGTH+1):
+			wordCount = vars(self)["wordsLen"+str(i)]
+			wordRatio = wordCount/(numWords*1.0)
+			vars(self)["ratioWordsLen"+str(i)] = wordRatio
 			
+		
 	def __unicodeToString(self, uni):
 		"""UnicodeToString:
 			Takes a unicode type object and attempts

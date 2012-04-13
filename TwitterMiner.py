@@ -69,6 +69,8 @@ class TwitterMiner(object):
 		fOut = open("Features.csv", 'w')
 		self.__writeLine(fOut, Settings.ALL_FEATURES)
 		
+		print "TweetMiner\nMining..."
+		tweetCount = 0
 		for jFile in self.jsonFiles:
 			fIn = open(jFile, 'r')
 			#loop through tweets
@@ -78,6 +80,7 @@ class TwitterMiner(object):
 				#make sure it's an actual tweet, and in english
 				tweet = self.__makeTweet(tweetDict, genderFinder)
 				if tweet != False and tweet.isValid:
+					tweetCount += 1
 					self.__writeLine(fOut, tweet.getFeatureVector())
 			fIn.close()
 		fOut.close()
@@ -96,7 +99,7 @@ class TwitterMiner(object):
 	def __writeLine(self, fHandle, array):
 		row = ""
 		if Settings.DEBUG:
-			print "Writeline: " + array[0] + ":"+array[-1]
+			print "Writeline: " + str(array[0]) + ":"+str(array[-1])
 		for element in array:
 			row+=str(element)+","
 		fHandle.write(row[0:-1]+"\r\n")

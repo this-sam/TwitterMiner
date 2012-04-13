@@ -21,7 +21,14 @@ class Settings:
      FEMALE_FILE = SELF_DIR+"Resources/finalFemale.txt"
      
      #--------Tweet Feature Vector Constants-----------
-     ALL_FEATURES = ["numChars", "numWords", "avgWordLen", "hasPunctuation", "capsRatio",\
+     ALL_FEATURES = ["numChars", "numDigits", "numWords", "avgWordLen", "hasPunctuation", "capsRatio",\
 					 "totalEntities", "hasHashtags", "totalHashtags", "hasURLs", "totalURLs",\
 					 "hasUserMentions", "totalUserMentions", "wasRetweeted", "isRetweet",\
-                     "numPunctuation", "numDigits","gender"]
+                     "numPunctuation", "numDigits","gender", "wordsLenLong"]
+     
+     LONGEST_WORD_LENGTH = 10
+     
+     #add the word counts to the feature vector
+     for i in range(1, LONGEST_WORD_LENGTH+1):
+          ALL_FEATURES.append("wordsLen"+str(i))
+          ALL_FEATURES.append("ratioWordsLen"+str(i))
