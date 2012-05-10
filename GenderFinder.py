@@ -1,3 +1,13 @@
+#===============================================================================
+#
+# GenderFinder.py by Sam Brown
+#
+# The GenderFinder handles paring names with gender.  Using two separate lists of
+# male and female first names, the GenderFinder will return M/F/U for male, female,
+# and unknown names.
+#
+#===============================================================================
+
 class GenderFinder(object):
 	
 	global Settings
@@ -5,6 +15,7 @@ class GenderFinder(object):
 	
 	_instance = None
 	def __new__(cls, *args, **kwargs):
+		"""Overwrite the __new__ function to create a singleton object."""
 		#override the new method to use as a singleton
 		if not cls._instance:
 			cls._instance = super(GenderFinder, cls).__new__(
@@ -12,6 +23,7 @@ class GenderFinder(object):
 		return cls._instance
 
 	def __init__(self):
+		"""Loads male/female name lists, cleans the lists and builds hash tables for quick lookup."""
 		#load names
 		self.maleNames = open(Settings.MALE_FILE, 'r').readlines()
 		self.femaleNames = open(Settings.FEMALE_FILE, 'r').readlines()
@@ -29,8 +41,7 @@ class GenderFinder(object):
 		
 	
 	def lookupGender(self, name):
-		"""Determine which gender a name belongs to.  Return M for male, F for
-		female and U for undetermined."""
+		"""Determine which gender a name belongs to.  Return M for male, F for female and U for undetermined."""
 		
 		#if it's too short to look up, don't bother
 		if len(name)<2:
@@ -79,7 +90,7 @@ class GenderFinder(object):
 
 
 	def __generateHashTable(self, words):
-		#ASSUMES SORTED LIST OF WORDS!
+		"""Generates a 3-layer hash table from a SORTED list of words."""
 		hash = {}
 		for i in range(len(words)):
 			#if you're not 2 letters long, i don't care about you.
@@ -98,6 +109,7 @@ class GenderFinder(object):
 		return hash
 	
 	def __getSearchRange(self, kOuter, kInner, hashtable):
+		"""Use the hash table to determine where in the names file a particular name might be located."""
 		startLoc = -1
 		if kOuter in hashtable and kInner in hashtable[kOuter]:
 			startLoc = hashtable[kOuter][kInner]
@@ -125,6 +137,7 @@ class GenderFinder(object):
 		return (startLoc, endLoc)
 	
 if __name__ == '__main__':
+	"""Testing main function. Demonstrates how object is to be used."""
 	gf = GenderFinder()
 	print gf.lookupGender("Sam")
 	gf2 = GenderFinder

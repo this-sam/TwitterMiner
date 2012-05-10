@@ -1,3 +1,12 @@
+#===============================================================================
+#
+# Tweet.py by Sam Brown
+#
+# An object represntation of each individual tweet.  This class handles all functions
+# and calculations involved with turning tweets into feature vectors.
+#
+#===============================================================================
+
 class Tweet(object):
 	
 	global Settings, GenderFinder
@@ -8,6 +17,7 @@ class Tweet(object):
 	import datetime, pprint, re
 	
 	def __init__(self, tweetDict, genderFinder = GenderFinder()):
+		"""Initialize all tweet variables to default values, then set them."""
 		if Settings.DEBUG == True:
 			pprint.pprint(tweetDict)
 		
@@ -33,14 +43,8 @@ class Tweet(object):
 		self.numPunctuation = -1		#+ how many punctuation characters?
 		self.punctuation = []			#+ array containing all punctuation, in order
 		
-		self.hasTitleCase = False		#- any capital letters starting words?  (proper nouns, start of sentence... etc.)
-		self.hasCapsWord  = False		#- any words of all capitals?
-		self.capsSegments = []			#- array of sections of text that are all caps (punctuation included)
 		self.capsRatio	  = -1			#+ ratio of capitalized to non-capitalized letters
-		
-		self.hasEmoticons = False		#- does this tweet contain emoticons?
-		self.emoticons = []				#- array of emoticons used in this tweet
-		
+
 		self.longestWordLength = 10		#count words of length 10 and under
 		for i in range(1, Settings.LONGEST_WORD_LENGTH+1):
 			vars(self)["wordsLen"+str(i)] = 0
@@ -48,40 +52,20 @@ class Tweet(object):
 		self.wordsLenLong = 0			#all words longer than longestWordLength
 		
 		#twitter elements
-		self.totalEntities = -1  		#- entities are hashtags, urls & mentions
 		self.hasHashtags = False		#+ does the tweet use hash tags?
-		self.hashtags = []				#- array of hashtag items from tweet
 		self.totalHashtags = -1 		#+ 
-		self.urls = []					#-
 		self.totalURLs	= -1 			#+
 		self.hasURLs = False			#+
-		self.userMentions = []			#-
 		self.totalUserMentions = -1 	#+
 		self.hasUserMentions = False	#+
-		self.source	= ""				#-
-		self.mobileSource = False		#-
 		self.isRetweet = False			#+ what type of tweet ()
 		self.wasRetweeted = False 		#+ was it retweeted
 		self.retweetCount = -1			#+ hw many people retweeted it?
 		
-		#geo
-		self.geo = ""					#-
-		self.hasGeo = False				#-
-		self.source = ""				#-
-		
 		#user
 		self.name = ""					#+
-		self.gender = 'U'				#- M/F for male, female, U for unknown
+		self.gender = 'U'				#+ M/F for male, female, U for unknown
 		self.screenname = ""			#+
-		self.created_at = ""			#-
-		self.hasProfImage = False		#-
-		self.hasBackgroundImage = False #-
-		self.followersCount = -1 		#-
-		self.favoritesCount = -1 		#-
-		self.friendsCount = -1 			#-
-		self.followingCount = -1 		#-
-		self.hasDescription = False		#-
-		self.statusesCount = -1 		#-
 		
 		self.featureVector = []			#+ and the moment you've all been waiting for...
 		self.allFeatures = Settings.ALL_FEATURES
@@ -100,23 +84,21 @@ class Tweet(object):
 					   re.search("\n", self.name) is None and\
 					   self.isRetweet == False
 
-
-		#for now, if text can't be converted from unicode, ditch it.		
+		#If the tweet does not meet all of the validation criteria, stop setting its values.	
 		if not self.isValid:
 			return
 		
+		#Create x'ed out text
 		self.xText = self.__xOutText(self.text)		
 		
-		#Some twitter info:
-
+		#Set some twitter info:
 		self.numRetweets = tweetDict["retweet_count"]
 		self.wasRetweeted = self.numRetweets > 0
 		self.timestamp = tweetDict["created_at"]
 
-		#Some text info
+		#Set some text info
 		self.length = len(self.text)
 		words = self.__getWords(self.xText)
-		
 		self.numChars = self.__getNumChars(words)
 		self.numWords = self.__getNumWords(words)
 		self.numDigits = self.__getNumNumbers(self.xText)
@@ -134,6 +116,7 @@ class Tweet(object):
 		self.__setWordLengthCounts(words)
 		self.__setWordLengthRatios(words)
 			
+		#caluclate information about punctuation
 		self.punctuation = self.__getPunctuation(self.xText)
 		self.hasPunctuation = len(self.punctuation) != 0
 		self.numPunctuation = len(self.punctuation)
@@ -161,14 +144,19 @@ class Tweet(object):
 	#====================================================
 	#    PUBLIC FUNCTIONS
 	def addFeature(self, featureName, featureValue):
+		"""Creates a new local variable from string featureName with value featureValue.
+		This local variable is automatically added to the current feature set and feature vector.
+		"""
 		vars(self)[featureName] = featureValue
 		self.allFeatures.append(featureName)
 		self.featureVector.append(featureValue)
 	
 	def getFeatureSet(self):
+		"""Returns the set of all feature names for the Tweet object."""
 		return self.allFeatures
 	
 	def getFeatureVector(self):
+		"""Returns the set of all features (feature vector) for the Tweet object."""
 		if len(self.featureVector) == 0:
 			self.featureVector = self.selectFeatures(self.allFeatures)
 		return self.featureVector
@@ -198,6 +186,7 @@ class Tweet(object):
 	#====================================================
 	#    PRIVATE FUNCTIONS	
 	def __getCapsCount(self, words):
+		"""Counts the number of capital letters in an array of words."""
 		count = 0
 		for word in words:
 			for char in word:
@@ -206,6 +195,7 @@ class Tweet(object):
 		return count
 	
 	def __getGenderFromName(self, name, genderFinder):
+		"""Uses the GenderFinder object to match a twitter-user's name to their gender."""
 		nameParts = re.split("[^A-Za-z]+", name)
 		gender = genderFinder.lookupGender(nameParts[0])
 		
@@ -216,12 +206,14 @@ class Tweet(object):
 
 
 	def __getNumChars(self, words):
+		"""Counts the number of characters contained in a list of words."""
 		count = 0
 		for word in words:
 			count += len(word)
 		return count
 
 	def __getNumNumbers(self, xText):
+		"""Counts the number of digits contained in a string."""
 		count = 0
 		for char in xText:
 			if char.isdigit():
@@ -229,10 +221,12 @@ class Tweet(object):
 		return count
 
 	def __getNumWords(self, words):
+		"""Returns the number of words in an array of words."""
 		return len(words)
 	
 			
 	def __getPunctuation(self, text):
+		"""Returns all punctuation contained in a given string."""
 		punctuation = []
 		for char in text:
 			if not char.isalnum() and char != " ":
@@ -240,6 +234,7 @@ class Tweet(object):
 		return punctuation
 	
 	def __getWords(self, text):
+		"""Splits a string into words, removing any which don't contain alphabetical characters."""
 		#return all strings containing at least 1 letter
 		#strip punctuation?
 		sText = text.split(" ")
@@ -277,6 +272,7 @@ class Tweet(object):
 		return words
 	
 	def __setWordLengthCounts(self, words):
+		"""For each of he word lengths that we are counting, count how many words in the text are that length.  Set the values."""
 		for word in words:
 			length = len(word)
 			if length <= Settings.LONGEST_WORD_LENGTH:
@@ -285,6 +281,7 @@ class Tweet(object):
 				self.wordsLenLong += 1
 				
 	def __setWordLengthRatios(self, words):
+		"""For each of he word lengths that we are counting, set the ratio of all words that that length makes up."""
 		numWords = len(words)
 		if numWords == 0:
 			return None
@@ -296,10 +293,7 @@ class Tweet(object):
 			
 		
 	def __unicodeToString(self, uni):
-		"""UnicodeToString:
-			Takes a unicode type object and attempts
-			to convert it to an ascii string.
-		"""
+		"""Takes a unicode type object and attempts to convert it to an ascii string."""
 		try:
 			text = str(uni)
 		except UnicodeEncodeError:
@@ -314,6 +308,7 @@ class Tweet(object):
 			
 			
 	def __xOutText(self, text):
+		"""Takes a string of characters and "x'es" out alpha characters into x or X depending on case."""
 		xText = ""
 		for char in text:
 			if char.isalpha() and char.isupper():
@@ -323,71 +318,11 @@ class Tweet(object):
 			else:
 				xText += char
 		return xText
-			
-			
-	
-			
-			
-			
-			
-			
-			
-			
-#====================================================
-#------------LEFTOVERS FROM EVENT ---------------
-#---------------------------------------------
-#Getter functions!
-#getters will either calculate a value, or return the calculated
-#value if the field has already been calculated.
-	
-	def getAvgWordLength(self):
-		s = self.text
-		s = s.lower()
-		ct = s.count('x')
-		numWords = getNumWords()
-		avgWordLength = ct/numWords
-
-	def getEmoticons(self):
-		pass
-	
-	def getLength(self):
-		pass
-
-
-		
-
-	
-	def getPunctuation(self):
-		pass
-	
-	def getSentenceType(self):
-		#exclamation, question, response, incomplete? ==> research
-		pass
-	
-	def convertTimestamp(self, timestamp):
-		splitTimestamp = timestamp.split(" ")
-		date = splitTimestamp[0]
-		time = splitTimestamp[1]
-		
-		splitDate = date.split("-")
-		year, month, day = int(splitDate[0]), int(splitDate[1]), int(splitDate[2])
-		
-		splitTime = time.split(":")
-		hours, minutes = int(splitTime[0]), int(splitTime[1])
-		seconds, miliseconds = int(splitTime[2].split(".")[0]), int(splitTime[2].split(".")[1])
-		
-		convertedTimestamp = datetime(year, month, day, hours, minutes, seconds, miliseconds*1000)
-		return convertedTimestamp
-	
 	
 	def __debug(self):
+		"""Prints all local variables."""
 		print "Dumping Object Tweet"
 		pprint.pprint(self.__dict__)
-		
-if __name__ == '__main__':
-	pass
-	#string = "A_01_4_02, 2011-09-29 21:37:28.291, snd, xxx x xxxxx xxx xxxxxxxx"
-	#tweet = Tweet(string)
 	
 	
 

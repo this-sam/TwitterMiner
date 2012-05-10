@@ -1,3 +1,14 @@
+#===============================================================================
+#
+# TwitterMiner.py by Sam Brown
+#
+# This class serves as the "driver" for the Twitter feature extraction process.
+# Parses through all .json files in a directory (specified in Settings.py) and
+# outputs all that meet the selection criteria into Features.csv.  Also handles
+# matching tweets with gender through the GenderFinder class.
+#
+#===============================================================================
+
 class TwitterMiner(object):
 	
 	global re, pprint
@@ -12,8 +23,7 @@ class TwitterMiner(object):
 	from GenderFinder import GenderFinder
 	
 	def __init__(self):
-		"""Initialize TwitterMiner Class
-		"""
+		"""Load json decoder, find all input files"""
 		#Tools:
 		self.decoder = json.JSONDecoder()
 		
@@ -33,9 +43,7 @@ class TwitterMiner(object):
 	# Public Functions
 	
 	def getFiles(self):
-		"""
-		Load files from Settings.ROOT_DIR
-		"""
+		"""Load files from Settings.ROOT_DIR"""
 		jsonFiles = []
 		
 		#walk the file directory
@@ -50,17 +58,23 @@ class TwitterMiner(object):
 		return jsonFiles
 
 	def getTweetDict(self, tweetString):
+		"""Turn a string in JSON format (line in the .json file) into a python dictionary."""
 		try:
 			decodeTuple = self.decoder.raw_decode(tweetString)
 		except json.decoder.JSONDecodeError:
 			if Settings.DEBUG:
-				print "This tweet broke it."
+				print "This tweet broke it:",
 				pprint.pprint(tweetString)
 		else:
 			return decodeTuple
 		return ({}, 0)
 	
 	def mineTweets(self):
+		"""Parses through tweets and writes them to an output file one at a time.
+		
+		Notes: Could be sped up through use of an output buffer, but watch out
+		for memory overhead.
+		"""
 		#for matching gender, dontcha know
 		genderFinder = GenderFinder()
 		
@@ -71,6 +85,7 @@ class TwitterMiner(object):
 		
 		print "TweetMiner\nMining..."
 		tweetCount = 0
+		#loop through each file
 		for jFile in self.jsonFiles:
 			fIn = open(jFile, 'r')
 			#loop through tweets
@@ -90,6 +105,8 @@ class TwitterMiner(object):
 	# Private Functions
 
 	def __makeTweet(self, tweetDict, genderFinder):
+		"""Creates a Tweet object from a dictionary.  Requires the genderFinder object
+		so that each Tweet can be matched to a gender."""
 		if "user" in tweetDict:
 			if tweetDict["user"]["lang"] == "en":
 				tweet = Tweet(tweetDict, genderFinder)
@@ -97,6 +114,7 @@ class TwitterMiner(object):
 		return False
 
 	def __writeLine(self, fHandle, array):
+		"""Writes a comma-separated line to a file from an array."""
 		row = ""
 		if Settings.DEBUG:
 			print "Writeline: " + str(array[0]) + ":"+str(array[-1])
@@ -104,91 +122,10 @@ class TwitterMiner(object):
 			row+=str(element)+","
 		fHandle.write(row[0:-1]+"\r\n")
 
-
-
-
-
-
-
-
-
-#==============================================================================
-# FROM ATTRIBUTE SELECTOR CLASS
-#===============================================
-#--------------Public  Functions----------------
-
-	def getUserFeatureVectors(self):
-		featureVectors = []			
-		for chat in self.chats:
-			featureVectors.append(chat.userA.featureVector)
-			featureVectors.append(chat.userB.featureVector)
-		return featureVectors
-	
-	def getMessageFeatureVectors(self):
-		featureVectors = []			
-		for chat in self.chats:
-			for message in chat.userA.messages+chat.userB.messages:
-				featureVectors.append(message.featureVector)
-		return featureVectors
-
-
-		
-			
-			
-
-	
-
-	def __makeChats(self):
-		"""Create conversations by loading users from survey and message files
-		
-		creates an array of chats
-		"""
-		surveys = []
-		users = {}
-		chats = []
-		
-		for surveyFile in self.surveyFiles:
-			survey = open(surveyFile, 'r')
-			date = surveyFile.split('/')[0]
-			
-			#create a new Survey and user for each line in the survey file
-			#add the users to a temporary array so that they can be added into chats
-			tmpUsers = {}
-			for line in survey:
-				#temporary hack to prevent out of memory errors
-				#if len(tmpUsers) > 20:
-				#	break
-				
-				surveys.append(Survey(line))
-				userFile = surveys[-1].getUserFilename()
-				userFName = Settings.ROOT_DIR+userFile
-				
-				#handle uncertain filenames
-				try:
-					userEventString = open(userFName, 'r').read()
-					user = User(userEventString, surveys[-1])
-					tmpUsers[user.index] = user
-				except IOError:
-					print "Expected file "+userFile+" was not found."
-				#prevent memory leaks
-				#if len(tmpUsers) >= 14:
-				#	break
-				
-			#pair users and create chats	
-			for username, user in tmpUsers.iteritems():
-				if ((user.classification == 'A') or (user.classification == 'C')):
-					#handle unpaired users
-					try:
-						chats.append(Chat(user, tmpUsers[user.partnerIndex]))
-					except Exception:
-						print "User "+user.username+" could not find their partner."
-		return chats			
-
-
 	def __debug(self):
+		"""Print all TwitterMiner variables."""
 		print "Dumping Object TwitterMiner"
 		pprint.pprint(self.jsonFiles)
-
 
 if __name__ == '__main__':
 	miner = TwitterMiner()
